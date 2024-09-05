@@ -24,6 +24,10 @@ func main () {
 		return c.String(http.StatusOK, string(bodyBytes))
 	})
 
+	e.GET("/healthcheck", func(c echo.Context) error {
+		return c.String(http.StatusOK, "HEALTHY")
+	})
+
 
 	e.Logger.Fatal(e.Start(port))
 }
