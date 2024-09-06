@@ -2,6 +2,7 @@ package main
 
 import (
 	"io"
+	"log"
 	"net/http"
 	"github.com/labstack/echo/v4"
 )
@@ -11,6 +12,8 @@ func postEchoHandler(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
+
+	log.Println("Received Message: ", string(bodyBytes))
 	return c.String(http.StatusOK, string(bodyBytes))
 }
 

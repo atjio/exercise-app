@@ -1,7 +1,7 @@
 package main
 
 import (
-	"encoding/json"
+	"bytes"
 	"io"
 	"net"
 	"net/http"
@@ -50,19 +50,12 @@ func postEchoHandler(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 
-	var bodyJson map[string]interface{}
-
-	err = json.Unmarshal(bodyBytes, &bodyJson)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err)
-	}
-
 	if (len(state.healthyNodes) == 0) {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Instance not available")
 	}
 
-	for i := 0; i < len(state.healthyNodes); len++ {
-		res, err := http.Post(state.healthyNodes[i] + "/echo", "application/json", bodyJson);
+	for i := 0; i < len(state.healthyNodes); i++ {
+		res, err := http.Post(state.healthyNodes[i] + "/echo", "application/json", bytes.NewReader(bodyBytes));
 		
 		if (err != nil) {
 			continue
@@ -74,7 +67,7 @@ func postEchoHandler(c echo.Context) error {
 			return echo.NewHTTPError(http.StatusInternalServerError, err)
 		}
 
-		state.healthyNodes = append(state.healthyNodes[i:], state.healthyNodes[:i])
+		state.healthyNodes = append(state.healthyNodes[i+1:], state.healthyNodes[:i+1]...)
 		log.Println("Active Node: [" + strings.Join(state.healthyNodes, ",") + "]")
 
 		return c.String(http.StatusOK, string(body))
