@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"time"
 	
 	"github.com/labstack/echo/v4"
 )
@@ -10,6 +11,7 @@ import (
 var (
 	port string
 	loadBalancerUrl string = "http://127.0.0.1:8080"
+	delayInMS time.Duration = 0 * time.Millisecond
 )
 
 func main () {
@@ -21,12 +23,11 @@ func main () {
 	e.POST("/echo", postEchoHandler)
 	e.GET("/healthcheck", getHealthCheckHandler)
 	e.GET("/debug", getDebugHandler)
-
+	e.POST("/simulateDelay", postSimulateDelayHandler)
+	
 	go func() {
-		e.Logger.Fatal(e.Start(port))
+		registerService(loadBalancerUrl + "/register")
 	}()
 
-	registerService(loadBalancerUrl + "/register")
-
-	select {}
+	e.Logger.Fatal(e.Start(port))
 }

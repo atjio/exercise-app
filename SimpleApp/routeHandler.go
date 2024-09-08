@@ -4,10 +4,14 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strconv"
+	"time"
+
 	"github.com/labstack/echo/v4"
 )
 
 func postEchoHandler(c echo.Context) error {
+	time.Sleep(delayInMS)
 	bodyBytes, err := io.ReadAll(c.Request().Body)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
@@ -42,4 +46,16 @@ func getDebugHandler(c echo.Context) error {
 	}
 
 	return c.String(http.StatusOK, string(body))
+}
+
+func postSimulateDelayHandler(c echo.Context) error {
+	d := c.FormValue("delay")
+	delay, err := strconv.Atoi(d)
+	if err != nil {
+		delayInMS = 0 * time.Millisecond
+	} else {
+		delayInMS = time.Duration(delay) * time.Millisecond
+	}
+
+	return c.String(http.StatusOK, "Delay = " + string(delayInMS))
 }

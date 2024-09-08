@@ -13,6 +13,7 @@ import (
 )
 
 func getRegisterHandler(c echo.Context) error {
+	registeredNodes := append(state.healthyNodes, state.unhealthyNodes...)
 	clientPort := c.Request().Header.Get("X-Client-Port")
 
 	if (clientPort == "") {
@@ -26,7 +27,7 @@ func getRegisterHandler(c echo.Context) error {
 
 	url := "http://" + clientIP + clientPort
 
-	if (!slices.Contains(state.healthyNodes, url)) {
+	if (!slices.Contains(registeredNodes, url)) {
 		res, err := http.Get(url + "/healthcheck")
 		if (err != nil) {
 			return echo.NewHTTPError(http.StatusInternalServerError, err)
