@@ -56,7 +56,11 @@ func postEchoHandler(c echo.Context) error {
 	}
 
 	for i := 0; i < len(state.healthyNodes); i++ {
-		res, err := http.Post(state.healthyNodes[i] + "/echo", "application/json", bytes.NewReader(bodyBytes));
+		res, err := http.Post(
+			state.healthyNodes[i] + c.Request().URL.Path, 
+			c.Request().Header.Get("Content-Type"), 
+			bytes.NewReader(bodyBytes)
+		);
 		
 		if (err != nil) {
 			continue

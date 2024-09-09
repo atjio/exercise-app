@@ -22,6 +22,7 @@ func postEchoHandler(c echo.Context) error {
 }
 
 func getHealthCheckHandler(c echo.Context) error {
+	time.Sleep(delayInMS)
 	return c.String(http.StatusOK, "HEALTHY")
 }
 
