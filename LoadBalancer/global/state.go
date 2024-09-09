@@ -35,10 +35,18 @@ func (s *AppState) AddNode(node string) {
 	s.HealthyNodes = append(s.HealthyNodes, node)
 }
 
-// func (s *AppState) useNode() string {
-// 	s.mutex.Lock()
-// 	defer s.mutex.Unlock()
-// }
+func (s *AppState) GetNextHealthyNode() string {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	if (len(s.HealthyNodes) > 0) {
+		nextNode := s.HealthyNodes[0]
+		s.HealthyNodes = append(s.HealthyNodes[1:], s.HealthyNodes[:1]...)
+
+		return nextNode
+	}
+	return ""
+}
 
 var State = &AppState{
 	HealthyNodes: make([]string, 0),

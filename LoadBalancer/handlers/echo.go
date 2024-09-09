@@ -18,21 +18,21 @@ func PostEchoHandler(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 
-	if (len(global.State.HealthyNodes) == 0) {
-		return echo.NewHTTPError(http.StatusInternalServerError, "Instance not available")
+	httpClient := http.Client {
+		Timeout: global.NODE_MAX_TIMEOUT,
 	}
 
-	for i := 0; i < len(global.State.HealthyNodes); i++ {
-		selectedNode := global.State.HealthyNodes[i]
-		res, err := http.Post(
+	for {
+		selectedNode := global.State.GetNextHealthyNode()
+		if (selectedNode == "") {
+			break
+		}
+
+		res, _ := httpClient.Post(
 			selectedNode + c.Request().URL.Path, 
 			c.Request().Header.Get("Content-Type"), 
     		bytes.NewReader(bodyBytes),
 		)
-		
-		if (err != nil) {
-			continue
-		}
 
 		defer res.Body.Close()
 		body, err := io.ReadAll(res.Body)
@@ -40,10 +40,10 @@ func PostEchoHandler(c echo.Context) error {
 			return echo.NewHTTPError(http.StatusInternalServerError, err)
 		}
 
-		global.State.HealthyNodes = append(global.State.HealthyNodes[i+1:], global.State.HealthyNodes[:i+1]...)
 		log.Println("Active Node: [" + strings.Join(global.State.HealthyNodes, ",") + "]")
 
 		return c.String(http.StatusOK, string(body))
+		
 	}
 
 	return echo.NewHTTPError(http.StatusInternalServerError, "Instance not available")

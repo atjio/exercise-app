@@ -20,7 +20,7 @@ func InitiateHealthcheck() {
 			healthyNodes []string
 			unhealthyNodes []string
 			wg sync.WaitGroup
-			nodes []nodeStatus
+			nodes = make([]nodeStatus, len(nodeList))
 		)
 
 		for i, node := range nodeList {
