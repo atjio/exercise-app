@@ -3,27 +3,12 @@ package main
 import (
 	"fmt"
 	"flag"
-	"time"
+
 	"github.com/labstack/echo/v4"
+	
+	"LoadBalancer/handlers"
 )
 
-type loadBalancerStatus struct {
-	healthyNodes []string 
-	unhealthyNodes []string 
-}
-
-// type node struct {
-// 	url string
-// }
-
-// func healthcheck()
-
-var (
-	state loadBalancerStatus
-	healthcheckUrl string = "/healthcheck"
-	healtcheckDelayInMS time.Duration = 1000 * time.Millisecond
-	nodeMaxTimeout time.Duration = 2000 * time.Millisecond
-)
 func main() {
 	portNumber := flag.String("port", "8080", "LoadBalancer Port")
 	flag.Parse()
@@ -31,19 +16,10 @@ func main() {
 
 	e := echo.New()
 
-	e.GET("/register", getRegisterHandler)
-	e.POST("/*", postEchoHandler)
+	e.GET("/register", handlers.GetRegisterHandler)
+	e.POST("/*", handlers.PostEchoHandler)
 
-	go func() {
-		for {
-			healthyNodes, unhealthyNodes := healthcheck(healthcheckUrl)
-			state.healthyNodes = healthyNodes
-			state.unhealthyNodes = unhealthyNodes
-
-			time.Sleep(healtcheckDelayInMS)
-		}
-		
-	}()
+	go handlers.InitiateHealthcheck()
 
 	e.Logger.Fatal(e.Start(port))
 }
