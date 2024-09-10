@@ -8,7 +8,7 @@ import (
 	"SimpleApp/global"
 )
 
-func RegisterService(url string) error {
+func RegisterService() error {
 	log.Println(global.GetHealthcheckUrl())
 	for {
 		resp, err := http.Get(global.GetHealthcheckUrl())
@@ -20,7 +20,7 @@ func RegisterService(url string) error {
 
 	client := &http.Client{}
 
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequest("GET", global.REGISTER_URL, nil)
 	if err != nil {
 		return err
 	}

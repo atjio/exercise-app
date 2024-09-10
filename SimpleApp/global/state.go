@@ -8,6 +8,4 @@ type AppState struct {
 	DelayInMS time.Duration
 }
 
-var State = &AppState{
-	DelayInMS: 0,
-}
+var State AppState

@@ -21,7 +21,7 @@ func main() {
 	e.GET("/debug", handlers.GetDebugHandler)
 	e.POST("/simulateDelay", handlers.PostSimulateDelayHandler)
 
-	go handlers.RegisterService(global.LOAD_BALANCER_URL)
+	go handlers.RegisterService()
 
 	e.Logger.Fatal(e.Start(global.PORT))
 }

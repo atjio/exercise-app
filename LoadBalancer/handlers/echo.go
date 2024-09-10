@@ -18,24 +18,23 @@ func PostEchoHandler(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 
-	httpClient := http.Client {
+	httpClient := http.Client{
 		Timeout: global.NODE_MAX_TIMEOUT,
 	}
 
 	for {
 		selectedNode := global.State.GetNextHealthyNode()
-		if (selectedNode == "") {
+		if selectedNode == "" {
 			break
 		}
 
-		res, _ := httpClient.Post(
-			selectedNode + c.Request().URL.Path, 
-			c.Request().Header.Get("Content-Type"), 
-    		bytes.NewReader(bodyBytes),
+		body, err := passRequest(
+			&httpClient,
+			selectedNode+c.Request().URL.Path,
+			c.Request().Header.Get("Content-Type"),
+			bytes.NewReader(bodyBytes),
 		)
 
-		defer res.Body.Close()
-		body, err := io.ReadAll(res.Body)
 		if err != nil {
 			return echo.NewHTTPError(http.StatusInternalServerError, err)
 		}
@@ -43,8 +42,21 @@ func PostEchoHandler(c echo.Context) error {
 		log.Println("Active Node: [" + strings.Join(global.State.HealthyNodes, ",") + "]")
 
 		return c.String(http.StatusOK, string(body))
-		
+
 	}
 
 	return echo.NewHTTPError(http.StatusInternalServerError, "Instance not available")
+}
+
+var passRequest = func(httpClient *http.Client, url string, header string, body *bytes.Reader) (response []byte, err error) {
+	res, _ := httpClient.Post(
+		url,
+		header,
+		body,
+	)
+
+	defer res.Body.Close()
+	response, err = io.ReadAll(res.Body)
+
+	return response, err
 }

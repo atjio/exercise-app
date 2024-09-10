@@ -42,13 +42,23 @@ func TestAppState_AddNode(t *testing.T) {
 	state := &AppState{}
 
 	state.AddNode("node1")
+	state.AddNode("node2")
+	state.AddNode("node3")
 
-	if len(state.HealthyNodes) != 1 {
+	if len(state.HealthyNodes) != 3 {
 		t.Errorf("Expected 1 healthy node, but got %d", len(state.HealthyNodes))
 	}
 
 	if state.HealthyNodes[0] != "node1" {
 		t.Errorf("Expected node1 to be the first healthy node, but got %s", state.HealthyNodes[0])
+	}
+
+	if state.HealthyNodes[1] != "node2" {
+		t.Errorf("Expected node1 to be the first healthy node, but got %s", state.HealthyNodes[1])
+	}
+
+	if state.HealthyNodes[2] != "node3" {
+		t.Errorf("Expected node1 to be the first healthy node, but got %s", state.HealthyNodes[2])
 	}
 }
 
