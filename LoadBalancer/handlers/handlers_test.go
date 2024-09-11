@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestRefreshNodeHealthStatus_StandardCase(t *testing.T) {
+func TestHandlers_RefreshNodeHealthStatus_StandardCase(t *testing.T) {
 	global.State = &global.AppState{HealthyNodes: []string{}}
 
 	mockHealthcheckResponses := map[string]string{
@@ -38,7 +38,7 @@ func TestRefreshNodeHealthStatus_StandardCase(t *testing.T) {
 	assert.Equal(t, global.State.HealthyNodes[1], "http://localhost:9012")
 }
 
-func TestRefreshNodeHealthStatus_AddHealthy_PutAtTheEnd(t *testing.T) {
+func TestHandlers_RefreshNodeHealthStatus_AddHealthy_PutAtTheEnd(t *testing.T) {
 	global.State = &global.AppState{HealthyNodes: []string{}}
 
 	mockHealthcheckResponses := map[string]string{
@@ -63,7 +63,7 @@ func TestRefreshNodeHealthStatus_AddHealthy_PutAtTheEnd(t *testing.T) {
 	assert.Equal(t, global.State.HealthyNodes[2], "http://localhost:5678")
 }
 
-func TestGetRegisterHandler_StandardCase(t *testing.T) {
+func TestHandlers_GetRegisterHandler_StandardCase(t *testing.T) {
 	global.State = &global.AppState{HealthyNodes: []string{}}
 
 	mockHealthcheckResponses := map[string]string{
@@ -101,7 +101,43 @@ func TestGetRegisterHandler_StandardCase(t *testing.T) {
 	assert.Equal(t, global.State.HealthyNodes[2], "http://localhost:9012")
 }
 
-func TestGetRegisterHandler_UnhealthyNewNode(t *testing.T) {
+func TestHandlers_GetRegisterHandler_MissingPort(t *testing.T) {
+	global.State = &global.AppState{HealthyNodes: []string{}}
+
+	mockHealthcheckResponses := map[string]string{
+		"http://localhost:1234": "HEALTHY",
+		"http://localhost:5678": "HEALTHY",
+		"http://localhost:9012": "HEALTHY",
+	}
+
+	global.State.AddNode("http://localhost:1234")
+	global.State.AddNode("http://localhost:5678")
+
+	healthcheck = mockHealthcheck(mockHealthcheckResponses)
+
+	e := echo.New()
+
+	req := httptest.NewRequest(
+		"GET",
+		"/register",
+		strings.NewReader(""),
+	)
+
+	req.RemoteAddr = "localhost:9012"
+
+	rec := httptest.NewRecorder()
+
+	err := GetRegisterHandler(e.NewContext(req, rec))
+	assert.NoError(t, err)
+
+	assert.Equal(t, http.StatusInternalServerError, rec.Code)
+
+	assert.Len(t, global.State.HealthyNodes, 2)
+	assert.Equal(t, global.State.HealthyNodes[0], "http://localhost:1234")
+	assert.Equal(t, global.State.HealthyNodes[1], "http://localhost:5678")
+}
+
+func TestHandlers_GetRegisterHandler_UnhealthyNewNode(t *testing.T) {
 	global.State = &global.AppState{HealthyNodes: []string{}}
 
 	mockHealthcheckResponses := map[string]string{
@@ -138,7 +174,7 @@ func TestGetRegisterHandler_UnhealthyNewNode(t *testing.T) {
 	assert.Equal(t, global.State.HealthyNodes[1], "http://localhost:5678")
 }
 
-func TestGetRegisterHandler_NodeAlreadyRegistered(t *testing.T) {
+func TestHandlers_GetRegisterHandler_NodeAlreadyRegistered(t *testing.T) {
 	global.State = &global.AppState{HealthyNodes: []string{}}
 
 	mockHealthcheckResponses := map[string]string{
@@ -178,7 +214,7 @@ func TestGetRegisterHandler_NodeAlreadyRegistered(t *testing.T) {
 }
 
 // Let Healthcheck update the state
-func TestGetRegisterHandler_NodeAlreadyRegisteredInUnhealthy(t *testing.T) {
+func TestHandlers_GetRegisterHandler_NodeAlreadyRegisteredInUnhealthy(t *testing.T) {
 	global.State = &global.AppState{HealthyNodes: []string{}}
 
 	mockHealthcheckResponses := map[string]string{
@@ -216,7 +252,7 @@ func TestGetRegisterHandler_NodeAlreadyRegisteredInUnhealthy(t *testing.T) {
 	assert.Equal(t, global.State.HealthyNodes[1], "http://localhost:5678")
 }
 
-func TestPostEchoHandler_StandardCase(t *testing.T) {
+func TestHandlers_PostEchoHandler_StandardCase(t *testing.T) {
 	global.State = &global.AppState{HealthyNodes: []string{}}
 
 	mockResponses := map[string]string{
@@ -255,7 +291,7 @@ func TestPostEchoHandler_StandardCase(t *testing.T) {
 }
 
 // Echo handler shouldn't involve with healthcheck, as failures can be expected to detect problems (e.g Blue-Green)
-func TestPostEchoHandler_FirstNodeFail_FailFirstSucceedLater(t *testing.T) {
+func TestHandlers_PostEchoHandler_FirstNodeFail_FailFirstSucceedLater(t *testing.T) {
 	global.State = &global.AppState{HealthyNodes: []string{}}
 
 	mockResponses := map[string]string{
@@ -312,7 +348,7 @@ func TestPostEchoHandler_FirstNodeFail_FailFirstSucceedLater(t *testing.T) {
 	assert.Equal(t, global.State.HealthyNodes[2], "http://localhost:5678")
 }
 
-func TestPostEchoHandler_NoHealthyNode_Fail(t *testing.T) {
+func TestHandlers_PostEchoHandler_NoHealthyNode_Fail(t *testing.T) {
 	global.State = &global.AppState{HealthyNodes: []string{}}
 
 	mockResponses := map[string]string{}

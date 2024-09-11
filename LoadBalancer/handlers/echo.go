@@ -42,7 +42,6 @@ func PostEchoHandler(c echo.Context) error {
 		log.Println("Active Node: [" + strings.Join(global.State.HealthyNodes, ",") + "]")
 
 		return c.String(http.StatusOK, string(body))
-
 	}
 
 	return echo.NewHTTPError(http.StatusInternalServerError, "Instance not available")

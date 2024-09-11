@@ -2,91 +2,70 @@ package global
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAppState_GetAllNodes(t *testing.T) {
 	state := &AppState{
-		HealthyNodes:   []string{"node1", "node2"},
-		UnhealthyNodes: []string{"node3", "node4"},
+		HealthyNodes:   []string{"http://localhost:1234", "http://localhost:5678", "http://localhost:9012"},
+		UnhealthyNodes: []string{"http://localhost:1111"},
 	}
 
 	allNodes := state.GetAllNodes()
-	expectedNodes := []string{"node1", "node2", "node3", "node4"}
 
-	if len(allNodes) != len(expectedNodes) {
-		t.Errorf("Expected %d nodes, but got %d", len(expectedNodes), len(allNodes))
-	}
-
-	for _, node := range expectedNodes {
-		if !contains(allNodes, node) {
-			t.Errorf("Expected node %s to be in the list, but it was not", node)
-		}
-	}
+	assert.Len(t, allNodes, 4)
+	assert.Equal(t, allNodes[0], "http://localhost:1234")
+	assert.Equal(t, allNodes[1], "http://localhost:5678")
+	assert.Equal(t, allNodes[2], "http://localhost:9012")
+	assert.Equal(t, allNodes[3], "http://localhost:1111")
 }
 
 func TestAppState_UpdateNodes(t *testing.T) {
 	state := &AppState{}
 
-	state.UpdateNodes([]string{"node1", "node2"}, []string{"node3", "node4"})
+	healthyNodes := []string{"http://localhost:1234", "http://localhost:5678"}
+	unhealthyNodes := []string{"http://localhost:9012"}
 
-	if len(state.HealthyNodes) != 2 {
-		t.Errorf("Expected 2 healthy nodes, but got %d", len(state.HealthyNodes))
-	}
+	state.UpdateNodes(healthyNodes, unhealthyNodes)
 
-	if len(state.UnhealthyNodes) != 2 {
-		t.Errorf("Expected 2 unhealthy nodes, but got %d", len(state.UnhealthyNodes))
-	}
+	assert.Len(t, state.HealthyNodes, 2)
+	assert.Equal(t, state.HealthyNodes[0], "http://localhost:1234")
+	assert.Equal(t, state.HealthyNodes[1], "http://localhost:5678")
+
+	assert.Len(t, state.UnhealthyNodes, 1)
+	assert.Equal(t, state.UnhealthyNodes[0], "http://localhost:9012")
+
 }
 
 func TestAppState_AddNode(t *testing.T) {
 	state := &AppState{}
 
-	state.AddNode("node1")
-	state.AddNode("node2")
-	state.AddNode("node3")
+	state.AddNode("http://localhost:1234")
+	state.AddNode("http://localhost:5678")
+	state.AddNode("http://localhost:9012")
 
-	if len(state.HealthyNodes) != 3 {
-		t.Errorf("Expected 1 healthy node, but got %d", len(state.HealthyNodes))
-	}
-
-	if state.HealthyNodes[0] != "node1" {
-		t.Errorf("Expected node1 to be the first healthy node, but got %s", state.HealthyNodes[0])
-	}
-
-	if state.HealthyNodes[1] != "node2" {
-		t.Errorf("Expected node1 to be the first healthy node, but got %s", state.HealthyNodes[1])
-	}
-
-	if state.HealthyNodes[2] != "node3" {
-		t.Errorf("Expected node1 to be the first healthy node, but got %s", state.HealthyNodes[2])
-	}
+	assert.Len(t, state.HealthyNodes, 3)
+	assert.Equal(t, state.HealthyNodes[0], "http://localhost:1234")
+	assert.Equal(t, state.HealthyNodes[1], "http://localhost:5678")
+	assert.Equal(t, state.HealthyNodes[2], "http://localhost:9012")
 }
 
 func TestAppState_GetNextHealthyNode(t *testing.T) {
 	state := &AppState{
-		HealthyNodes: []string{"node1", "node2", "node3"},
+		HealthyNodes:   []string{"http://localhost:1234", "http://localhost:5678", "http://localhost:9012"},
+		UnhealthyNodes: []string{"http://localhost:1111"},
 	}
 
 	nextNode := state.GetNextHealthyNode()
+	assert.Equal(t, nextNode, "http://localhost:1234")
 
-	if nextNode != "node1" {
-		t.Errorf("Expected next healthy node to be node1, but got %s", nextNode)
-	}
+	nextNode = state.GetNextHealthyNode()
+	assert.Equal(t, nextNode, "http://localhost:5678")
 
-	if len(state.HealthyNodes) != 3 {
-		t.Errorf("Expected 3 healthy nodes left, but got %d", len(state.HealthyNodes))
-	}
+	nextNode = state.GetNextHealthyNode()
+	assert.Equal(t, nextNode, "http://localhost:9012")
 
-	if state.HealthyNodes[0] != "node2" {
-		t.Errorf("Expected node2 to be the first healthy node, but got %s", state.HealthyNodes[0])
-	}
-}
-
-func contains(s []string, e string) bool {
-	for _, a := range s {
-		if a == e {
-			return true
-		}
-	}
-	return false
+	nextNode = state.GetNextHealthyNode()
+	assert.Equal(t, nextNode, "http://localhost:1234")
 }

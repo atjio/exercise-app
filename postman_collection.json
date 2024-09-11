@@ -1,0 +1,133 @@
+{
+	"info": {
+		"_postman_id": "1428812c-7206-4a39-b2e9-cea098e9a27c",
+		"name": "Service Discovery",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "865909"
+	},
+	"item": [
+		{
+			"name": "Echo Endpoint",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"test\": \"abcde\",\n    \"trusty\": \"1234\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{$codaLoadBalancer}}/echo",
+					"host": [
+						"{{$codaLoadBalancer}}"
+					],
+					"path": [
+						"echo"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Simulate Delay",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "delay",
+							"value": "2001",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{$codaLoadBalancer}}/simulateDelay",
+					"host": [
+						"{{$codaLoadBalancer}}"
+					],
+					"path": [
+						"simulateDelay"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Force Register App",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "delay",
+							"value": "2001",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{$codaSimpleApp}}/debug",
+					"host": [
+						"{{$codaSimpleApp}}"
+					],
+					"path": [
+						"debug"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "HealthCheck",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "delay",
+							"value": "2001",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{$codaSimpleApp}}/healthcheck",
+					"host": [
+						"{{$codaSimpleApp}}"
+					],
+					"path": [
+						"healthcheck"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "$codaLoadBalancer",
+			"value": "localhost:8080"
+		},
+		{
+			"key": "$codaSimpleApp",
+			"value": "localhost:1234"
+		}
+	]
+}

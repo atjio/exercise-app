@@ -15,12 +15,12 @@ func GetRegisterHandler(c echo.Context) error {
 	clientPort := c.Request().Header.Get("X-Client-Port")
 
 	if clientPort == "" {
-		return echo.NewHTTPError(http.StatusInternalServerError, "Client Port is required")
+		return c.String(http.StatusInternalServerError, "Client Port is required")
 	}
 
 	clientIP, _, err := net.SplitHostPort(c.Request().RemoteAddr)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err)
+		return c.String(http.StatusInternalServerError, err.Error())
 	}
 
 	url := global.HTTP_PROTOCOL + clientIP + clientPort
