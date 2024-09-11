@@ -1,11 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"flag"
+	"fmt"
 
 	"github.com/labstack/echo/v4"
-	
+
 	"LoadBalancer/handlers"
 )
 

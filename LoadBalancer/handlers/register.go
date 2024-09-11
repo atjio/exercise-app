@@ -25,9 +25,13 @@ func GetRegisterHandler(c echo.Context) error {
 
 	url := global.HTTP_PROTOCOL + clientIP + clientPort
 
-	if !slices.Contains(registeredNodes, url) && triggerHealthcheck(url) {
+	if slices.Contains(registeredNodes, url) {
+		return c.String(http.StatusInternalServerError, "Node already registered")
+	} else if !(healthcheck(url)) {
+		return c.String(http.StatusInternalServerError, "Node is unhealthy, not registering")
+	} else {
 		global.State.AddNode(url)
+		return c.String(http.StatusOK, url)
 	}
 
-	return c.String(http.StatusOK, url)
 }

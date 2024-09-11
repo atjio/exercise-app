@@ -15,12 +15,12 @@ type nodeStatus struct {
 
 func InitiateHealthcheck() {
 	for {
-		refreshNodeHealthStatus()
+		RefreshNodeHealthStatus()
 		time.Sleep(global.HEALTHCHECK_DELAY_IN_MS)
 	}
 }
 
-func refreshNodeHealthStatus() {
+func RefreshNodeHealthStatus() {
 	nodeList := global.State.GetAllNodes()
 	var (
 		healthyNodes   []string
@@ -33,7 +33,7 @@ func refreshNodeHealthStatus() {
 		wg.Add(1)
 		go func(i int, node string) {
 			defer wg.Done()
-			nodes[i] = nodeStatus{url: node, healthy: triggerHealthcheck(node)}
+			nodes[i] = nodeStatus{url: node, healthy: healthcheck(node)}
 		}(i, node)
 	}
 
@@ -49,7 +49,7 @@ func refreshNodeHealthStatus() {
 	global.State.UpdateNodes(healthyNodes, unhealthyNodes)
 }
 
-var triggerHealthcheck = func(url string) bool {
+var healthcheck = func(url string) bool {
 	httpClient := http.Client{
 		Timeout: global.NODE_MAX_TIMEOUT,
 	}
