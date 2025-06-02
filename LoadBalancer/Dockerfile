@@ -1,0 +1,37 @@
+# Use an official Go runtime as a parent image
+FROM golang:1.21-alpine AS builder
+
+# Set the Current Working Directory inside the container
+WORKDIR /app
+
+# Copy go mod and sum files
+COPY go.mod go.sum ./
+
+# Tidy go.mod and go.sum files
+RUN go mod tidy
+
+# Download all dependencies. Dependencies will be cached if the go.mod and go.sum files are not changed
+RUN go mod download
+
+# Copy the source code into the container
+COPY . .
+
+# Build the Go app
+RUN CGO_ENABLED=0 GOOS=linux go build -v -o LoadBalancer main.go
+
+# Start a new stage from scratch
+FROM alpine:latest
+
+WORKDIR /root/
+
+# Copy the Pre-built binary file from the previous stage
+COPY --from=builder /app/LoadBalancer .
+
+# Set default values for environment variables
+ENV PORT="8080"
+
+# Expose port {PORT} to the outside world
+EXPOSE ${PORT}
+
+# Command to run the executable
+CMD ["./LoadBalancer", "-port", "${PORT}"]
