@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  loadbalancer:
+    build: ./LoadBalancer
+    container_name: loadbalancer
+    ports:
+      - "8080:8080" # Exposes port 8080 on the host to port 8080 in the container
+    environment:
+      - PORT=8080
+
+  simpleapp:
+    build: ./SimpleApp
+    depends_on:
+      - loadbalancer
+    environment:
+      - LOADBALANCER_URL=http://loadbalancer:8080 # Connects to the loadbalancer service
+      - PORT=1234 # Internal port for SimpleApp, can be overridden if needed per instance
+    # To run multiple instances of SimpleApp:
+    # Use 'docker-compose up --scale simpleapp=<number_of_instances>'
+    # Docker will automatically handle port conflicts on the host if you map them.
+    # For simplicity, we're not mapping SimpleApp's port to the host here,
+    # as they are accessed via the LoadBalancer.
+    # If direct access to SimpleApp instances is needed, add:
+    # ports:
+    #  - "1234" # Docker assigns a random host port to container port 1234
+    deploy:
+      replicas: 1 # Default number of replicas, can be overridden by --scale
+
+networks:
+  default:
+    driver: bridge
